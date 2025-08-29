@@ -9,15 +9,16 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { router } from 'expo-router';
+
 
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const handleStartAssessment = () => {
-    // Later we'll use: router.push('/age-input');
-    // For now, just alert
-    console.log('🧠 Starting Project Atlas assessment...');
-    alert('🎉 Welcome to Project Atlas!\n\nNext: We\'ll add navigation to the Age Input screen.');
+     console.log('🧠 Starting Project Atlas assessment...');
+     // Navigate to age input screen
+     router.push('/age-input');
   };
 
   return (
