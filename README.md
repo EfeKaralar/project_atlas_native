@@ -1,97 +1,296 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 🧠 Project Atlas™
 
-# Getting Started
+> **Agentic AI Meets Brain Wellness**
+> 60-second cognitive assessment powered by 5 AI agents
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+[![React Native](https://img.shields.io/badge/React%20Native-0.72+-blue.svg)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-SDK%2049+-000020.svg)](https://expo.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## Step 1: Start Metro
+## 📱 What is Project Atlas?
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+Project Atlas is a revolutionary brain wellness app that uses **5 AI agents** to analyze a simple 60-second animal naming test. Users get personalized cognitive insights and can contribute to brain health research.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### 🎯 The Experience
+1. **Enter age** (18-99) for personalized scoring
+2. **Record 60 seconds** of animal naming
+3. **AI agents analyze** speech, efficiency, flexibility, strategy, and insights
+4. **Get results** with brain wellness score
+5. **Share on social** or help research via wellness survey
 
-```sh
-# Using npm
+### 🤖 The "5 AI Agents"
+- **Speech Agent** - Cleans and processes audio
+- **Efficiency Agent** - Detects repetitions and errors
+- **Flexibility Agent** - Identifies semantic categories
+- **Strategy Agent** - Analyzes cognitive approach
+- **Insight Agent** - Generates personalized tips
+
+## 🚀 Quick Start with Expo
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Expo CLI
+- Expo Go app on your phone (for testing)
+
+### Setup Instructions
+
+```bash
+# 1. Install Expo CLI globally
+npm install -g @expo/cli
+
+# 2. Clone the project
+git clone <your-repo-url>
+cd ProjectAtlas
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the development server
+expo start
+
+# 5. Scan QR code with Expo Go app or press 'a' for Android emulator
+```
+
+### 📱 Testing on Device
+1. Install **Expo Go** from App Store/Play Store
+2. Scan the QR code from your terminal
+3. App loads instantly on your phone
+
+### 🖥️ Testing on Emulator
+```bash
+# Start development server
+expo start
+
+# Press 'a' for Android emulator
+# Press 'i' for iOS simulator
+```
+
+## 🏗️ Project Structure
+
+```
+ProjectAtlas/
+├── 📱 App.tsx                    # Main app entry point
+├── 📁 src/
+│   ├── 🖼️  screens/              # The 5 main screens
+│   │   ├── WelcomeScreen.tsx     # Welcome + Start Assessment
+│   │   ├── AgeInputScreen.tsx    # Age slider (18-99)
+│   │   ├── InstructionsScreen.tsx # Recording instructions
+│   │   ├── RecordingScreen.tsx   # 60-second timer + recording
+│   │   ├── ResultsScreen.tsx     # AI score + results
+│   │   └── WellnessSurveyScreen.tsx # Optional research survey
+│   ├── 🛠️  services/             # Backend integration
+│   │   ├── api.ts               # Azure API calls
+│   │   └── audio.ts             # Audio processing
+│   ├── 📊 utils/                # Utilities
+│   │   ├── tracking.ts          # Analytics/events
+│   │   └── storage.ts           # Local data storage
+│   ├── 🎨 components/           # Reusable UI components
+│   └── 📝 types/                # TypeScript definitions
+├── 🤖 android/                  # Android native code
+├── 🍎 ios/                      # iOS native code
+└── ⚙️  app.json                 # Expo configuration
+```
+
+## 🛠️ Tech Stack
+
+### Frontend (React Native + Expo)
+- **Framework**: Expo SDK 49+ with React Native
+- **Language**: TypeScript
+- **Navigation**: React Navigation 6
+- **State Management**: React Hooks + Context
+- **UI Components**: React Native + Custom styling
+- **Audio**: Expo AV for recording
+- **Storage**: Expo SecureStore + AsyncStorage
+- **Sharing**: Expo Sharing
+
+### Backend (Azure)
+- **Storage**: Azure Blob Storage (audio files)
+- **Compute**: Azure Functions (AI processing)
+- **AI**: Custom AI agents (speech analysis)
+- **Database**: Azure Cosmos DB (user data)
+- **API**: REST endpoints for assessment processing
+
+### Analytics & Tracking
+- **User Events**: Custom tracking system
+- **Performance**: React Native performance monitoring
+- **Crash Reporting**: Expo native crash reporting
+
+## 📋 Development Roadmap
+
+### ✅ Phase 1: Foundation (Week 1)
+- [x] Project setup with Expo
+- [x] Basic navigation structure
+- [x] Welcome screen with branding
+- [ ] Age input with slider component
+- [ ] Instructions screen with permissions
+- [ ] Basic recording screen with timer
+- [ ] Mock results display
+
+### 🔄 Phase 2: Core Features (Week 2)
+- [ ] Audio recording with proper format (WAV, 44.1kHz, 16-bit)
+- [ ] Azure Blob Storage integration
+- [ ] AI processing API connection
+- [ ] Real-time "AI agents analyzing" animation
+- [ ] Results screen with actual data
+- [ ] Share functionality
+- [ ] Wellness survey implementation
+
+### 🚀 Phase 3: Polish & Launch (Week 3)
+- [ ] Device testing (iOS/Android)
+- [ ] Performance optimization
+- [ ] Analytics tracking implementation
+- [ ] Error handling and edge cases
+- [ ] App store assets and metadata
+- [ ] TestFlight submission
+
+### 🎯 Phase 4: Partnership Prep (Week 4)
+- [ ] Wellness data analytics dashboard
+- [ ] Partnership integration APIs
+- [ ] A/B testing infrastructure
+- [ ] Viral sharing optimization
+- [ ] User onboarding optimization
+
+## 🎨 Design Specifications
+
+### Visual Design
+- **Primary Colors**: Purple gradient (`#667eea` to `#764ba2`)
+- **Recording Screen**: Black background (TikTok-friendly)
+- **Typography**: System fonts, bold weights
+- **Layout**: Mobile-first, portrait orientation
+
+### User Experience
+- **Flow**: Linear progression through 5 screens
+- **Duration**: Complete assessment in under 2 minutes
+- **Accessibility**: Voice prompts, clear visual hierarchy
+- **Performance**: <3s app launch, <1s screen transitions
+
+## 🔧 Development Scripts
+
+```bash
+# Start development server
 npm start
+# or
+expo start
 
-# OR using Yarn
-yarn start
+# Start on specific platform
+npm run android    # Android emulator
+npm run ios        # iOS simulator
+npm run web        # Web browser
+
+# Build for production
+expo build:android # Android APK/AAB
+expo build:ios     # iOS IPA
+
+# TypeScript checking
+npm run type-check
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
 ```
 
-## Step 2: Build and run your app
+## 📱 Testing & Deployment
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### Development Testing
+```bash
+# Test on physical device
+expo start → Scan QR code with Expo Go
 
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+# Test on emulator
+expo start → Press 'a' (Android) or 'i' (iOS)
 ```
 
-### iOS
+### Production Builds
+```bash
+# Build for Android Play Store
+expo build:android --type app-bundle
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+# Build for iOS App Store
+expo build:ios --type archive
 ```
 
-Then, and every time you update your native dependencies, run:
+### TestFlight Deployment (iOS)
+```bash
+# Build iOS app
+expo build:ios
 
-```sh
-bundle exec pod install
+# Upload to TestFlight
+# (Expo will provide instructions after build)
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## 🔑 Environment Variables
 
-```sh
-# Using npm
-npm run ios
+Create `.env` file in project root:
 
-# OR using Yarn
-yarn ios
+```bash
+# Azure Configuration
+AZURE_STORAGE_CONNECTION_STRING=your_azure_connection_string
+AZURE_STORAGE_CONTAINER=project-atlas-audio
+
+# API Endpoints
+API_BASE_URL=https://your-api.azurewebsites.net
+AI_PROCESSING_ENDPOINT=/api/process-assessment
+
+# Analytics
+ANALYTICS_API_KEY=your_analytics_key
+
+# Development
+EXPO_DEBUG=true
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## 📊 Key Metrics & Goals
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+### User Funnel
+- **App Opens** → **Assessment Started** → **Recording Completed** → **Results Viewed** → **Results Shared**
+- **Target**: >60% completion rate (opens → results)
+- **Viral Goal**: >25% share rate
 
-## Step 3: Modify your app
+### Technical Performance
+- **App Launch**: <3 seconds
+- **Recording Start**: <1 second
+- **AI Processing**: 5-15 seconds
+- **Results Display**: Instant
 
-Now that you have successfully run the app, let's make changes!
+### Partnership Data Collection
+- Demographics (age, education, location)
+- Sleep patterns and mood tracking
+- Exercise habits and cognitive performance
+- Family history data (anonymized)
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## 🤝 Contributing
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## 📄 License
 
-## Congratulations! :tada:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-You've successfully run and modified your React Native App. :partying_face:
+## 👥 Team
 
-### Now what?
+- **Author**: Kevin Mekulu (kxm5924@psu.edu)
+- **Institution**: Penn State University
+- **Project**: Brain Wellness Research Initiative
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## 🆘 Support
 
-# Troubleshooting
+### Common Issues
+- **App won't start**: Run `expo doctor` to check setup
+- **Audio not recording**: Check device permissions
+- **Build fails**: Clear cache with `expo start -c`
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+### Getting Help
+- 📧 Email: kxm5924@psu.edu
+- 📚 [Expo Docs](https://docs.expo.dev/)
+- 📚 [React Navigation Docs](https://reactnavigation.org/)
 
-# Learn More
+---
 
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+**🧠 "5 AI Agents revolutionize brain wellness" - Project Atlas™**
