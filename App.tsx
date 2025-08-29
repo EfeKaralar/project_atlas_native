@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Import the Welcome screen
-import WelcomeScreen from './src/screens/WelcomeScreen';
+import WelcomeScreen from './app/index';
 
 export default function App() {
   const handleStartAssessment = () => {
