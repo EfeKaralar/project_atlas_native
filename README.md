@@ -125,8 +125,8 @@ ProjectAtlas/
 - [x] Project setup with Expo
 - [x] Basic navigation structure
 - [x] Welcome screen with branding
-- [ ] Age input with slider component
-- [ ] Instructions screen with permissions
+- [x] Age input with slider component
+- [x] Instructions screen with permissions
 - [ ] Basic recording screen with timer
 - [ ] Mock results display
 
