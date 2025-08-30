@@ -56,13 +56,14 @@ export default function InstructionsScreen() {
     // Navigate to recording screen with age parameter
     console.log(`Starting recording for age: ${age}`);
     // For now, just alert. Next we'll create the recording screen
-    Alert.alert(
-      '🎙️ Ready to Record!',
-      `Age: ${age}\nMicrophone: Ready\n\nNext: Recording screen will be added!`
-    );
+    //    alert.alert(
+    //      '🎙️ Ready to Record!',
+    //      `age: ${age}\nMicrophone: Ready\n\nNext: Recording screen will be added!`
+    //    );
 
-    // Later this will be:
-    // router.push({ pathname: '/recording', params: { age } });
+    // Navigate to recording screen with age param
+     router.push({ pathname: '/recording', params: { age } });
+
   };
 
   const handleBack = () => {
