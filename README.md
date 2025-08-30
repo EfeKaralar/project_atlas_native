@@ -127,11 +127,11 @@ ProjectAtlas/
 - [x] Welcome screen with branding
 - [x] Age input with slider component
 - [x] Instructions screen with permissions
-- [ ] Basic recording screen with timer
+- [x] Basic recording screen with timer
 - [ ] Mock results display
 
 ### 🔄 Phase 2: Core Features (Week 2)
-- [ ] Audio recording with proper format (WAV, 44.1kHz, 16-bit)
+- [x] Audio recording with proper format (WAV, 44.1kHz, 16-bit)
 - [ ] Azure Blob Storage integration
 - [ ] AI processing API connection
 - [ ] Real-time "AI agents analyzing" animation
