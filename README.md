@@ -48,8 +48,10 @@ cd ProjectAtlas
 npm install
 
 # 4. Start the development server
+# When working on private network
 npx expo start
-
+# When working on public network or the test device is on another network
+npx expo start --tunnel
 # 5. Scan QR code with Expo Go app or press 'a' for Android emulator
 ```
 
