@@ -63,6 +63,7 @@ export default function InstructionsScreen() {
 
     // Navigate to recording screen with age param
      router.push({ pathname: '/recording', params: { age } });
+
   };
 
   const handleBack = () => {

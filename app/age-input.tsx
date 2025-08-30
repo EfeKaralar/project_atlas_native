@@ -18,8 +18,9 @@ export default function AgeInputScreen() {
   const [age, setAge] = useState<number>(35); // Default to middle age
 
   const handleContinue = () => {
-    // Navigate to instructions screen
-     router.push({ pathname: '/instructions', params: { age } });
+
+      // Navigate to the instructions screen with age parameter
+      router.push({ pathname: '/instructions', params: { age } });
   };
 
   const handleBack = () => {
