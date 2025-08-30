@@ -15,11 +15,16 @@ import { Audio } from 'expo-av';
 
 const { width, height } = Dimensions.get('window');
 
+// 🔧 TESTING CONFIGURATION - Change this ONE line to adjust timer!
+// For development: Set to 10 or 15 for quick testing
+// For production: Set to 60 for full assessment
+const RECORDING_DURATION = 60; // seconds
+
 export default function RecordingScreen() {
   const { age } = useLocalSearchParams<{ age: string }>();
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [timeRemaining, setTimeRemaining] = useState<number>(60);
+  const [timeRemaining, setTimeRemaining] = useState<number>(RECORDING_DURATION);
   const [sessionId] = useState<string>(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
   // Use refs for values that need to persist across renders
@@ -106,7 +111,7 @@ export default function RecordingScreen() {
       // Reset states
       hasStoppedRef.current = false;
       isStoppingRef.current = false;
-      setTimeRemaining(60);
+      setTimeRemaining(RECORDING_DURATION);
 
       // Request permissions first
       const { status } = await Audio.requestPermissionsAsync();
@@ -302,13 +307,17 @@ export default function RecordingScreen() {
   };
 
   const getTimerColor = (): string => {
-    if (timeRemaining > 30) return '#FFFFFF';
-    if (timeRemaining > 10) return '#FFC107';
-    return '#FF5722';
+    // Color thresholds as percentages of total duration
+    const halfTime = RECORDING_DURATION * 0.5; // 50% of duration
+    const finalCountdown = RECORDING_DURATION * 0.17; // ~17% of duration (10s if 60s)
+
+    if (timeRemaining > halfTime) return '#FFFFFF';      // White (plenty of time)
+    if (timeRemaining > finalCountdown) return '#FFC107'; // Yellow (getting urgent)
+    return '#FF5722';  // Red (final countdown!)
   };
 
   const getProgressPercentage = (): number => {
-    return Math.max(0, Math.min(100, ((60 - timeRemaining) / 60) * 100));
+    return Math.max(0, Math.min(100, ((RECORDING_DURATION - timeRemaining) / RECORDING_DURATION) * 100));
   };
 
   return (
