@@ -20,13 +20,15 @@ export default function RecordingScreen() {
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(60);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sessionId] = useState<string>(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
+  // Use refs for values that need to persist across renders
+  const recordingRef = useRef<Audio.Recording | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const recordingStartTime = useRef<number>(0);
-  const isStoppingRef = useRef<boolean>(false); // Prevent double-stopping
+  const isStoppingRef = useRef<boolean>(false);
+  const hasStoppedRef = useRef<boolean>(false); // Prevent multiple stops
 
   useEffect(() => {
     startRecording();
@@ -62,6 +64,10 @@ export default function RecordingScreen() {
   const cleanup = async () => {
     console.log('🧹 Cleaning up recording resources...');
 
+    // Mark as stopped to prevent further operations
+    hasStoppedRef.current = true;
+    isStoppingRef.current = false;
+
     // Stop timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -69,16 +75,16 @@ export default function RecordingScreen() {
     }
 
     // Stop and cleanup recording
-    if (recording && !isStoppingRef.current) {
+    if (recordingRef.current) {
       try {
-        const status = await recording.getStatusAsync();
+        const status = await recordingRef.current.getStatusAsync();
         if (status.isRecording) {
-          await recording.stopAndUnloadAsync();
+          await recordingRef.current.stopAndUnloadAsync();
         }
-        setRecording(null);
       } catch (error) {
-        console.log('Cleanup error:', error);
+        console.log('Cleanup error (non-critical):', error);
       }
+      recordingRef.current = null;
     }
 
     // Reset audio mode
@@ -87,11 +93,10 @@ export default function RecordingScreen() {
         allowsRecordingIOS: false,
       });
     } catch (error) {
-      console.log('Audio mode reset error:', error);
+      console.log('Audio mode reset error (non-critical):', error);
     }
 
     setIsRecording(false);
-    isStoppingRef.current = false;
   };
 
   const startRecording = async () => {
@@ -99,6 +104,7 @@ export default function RecordingScreen() {
       console.log('🎙️ Starting recording...');
 
       // Reset states
+      hasStoppedRef.current = false;
       isStoppingRef.current = false;
       setTimeRemaining(60);
 
@@ -134,25 +140,35 @@ export default function RecordingScreen() {
           linearPCMIsBigEndian: false,
           linearPCMIsFloat: false,
         },
-        web: {
-          mimeType: 'audio/webm',
-          bitsPerSecond: 128000,
-        },
       });
 
-      setRecording(newRecording);
+      // Store in ref (persists across renders)
+      recordingRef.current = newRecording;
       setIsRecording(true);
       recordingStartTime.current = Date.now();
+
+      console.log('✅ Recording object created and stored');
 
       // Start countdown timer
       timerRef.current = setInterval(() => {
         setTimeRemaining(prev => {
-          if (prev <= 1) {
-            // Use setTimeout to avoid race condition
-            setTimeout(() => handleStopRecording(), 100);
+          const newTime = prev - 1;
+          console.log(`⏱️ Timer: ${newTime} seconds remaining`);
+
+          // When timer hits 0, stop recording
+          if (newTime <= 0 && !hasStoppedRef.current) {
+            console.log('⏰ Timer reached 0, stopping recording...');
+            // Clear timer immediately to prevent repeated calls
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            // Stop recording
+            handleStopRecording();
             return 0;
           }
-          return prev - 1;
+
+          return newTime;
         });
       }, 1000);
 
@@ -167,34 +183,44 @@ export default function RecordingScreen() {
 
   const stopRecording = async (): Promise<string | null> => {
     // Prevent multiple simultaneous stops
-    if (isStoppingRef.current) {
-      console.log('⚠️ Already stopping recording...');
+    if (isStoppingRef.current || hasStoppedRef.current) {
+      console.log('⚠️ Already stopping/stopped recording...');
       return null;
     }
 
     isStoppingRef.current = true;
+    hasStoppedRef.current = true;
 
     try {
-      if (!recording) {
+      if (!recordingRef.current) {
         console.log('⚠️ No recording object to stop');
         return null;
       }
 
       console.log('🛑 Stopping recording...');
 
+      // Clear timer first
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
       // Check if recording is still active
-      const status = await recording.getStatusAsync();
+      const status = await recordingRef.current.getStatusAsync();
+      console.log('📊 Recording status:', status);
+
       if (!status.isRecording) {
         console.log('⚠️ Recording was already stopped');
-        const uri = recording.getURI();
+        const uri = recordingRef.current.getURI();
         return uri;
       }
 
       // Stop the recording
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      await recordingRef.current.stopAndUnloadAsync();
+      const uri = recordingRef.current.getURI();
 
-      console.log('✅ Recording stopped successfully, URI:', uri);
+      console.log('✅ Recording stopped successfully');
+      console.log('📁 Recording URI:', uri);
 
       // Reset audio mode
       await Audio.setAudioModeAsync({
@@ -203,29 +229,29 @@ export default function RecordingScreen() {
 
       setIsRecording(false);
 
-      // Clear timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-
       return uri;
 
     } catch (error) {
       console.log('❌ Recording stop error:', error);
-      Alert.alert('Error', `Failed to stop recording: ${error.message}`);
       return null;
+    } finally {
+      isStoppingRef.current = false;
     }
   };
 
   const handleStopRecording = async () => {
+    // Prevent multiple calls
+    if (hasStoppedRef.current) {
+      console.log('⚠️ Recording already handled');
+      return;
+    }
+
     const audioUri = await stopRecording();
     const actualDuration = (Date.now() - recordingStartTime.current) / 1000;
 
     if (audioUri) {
       console.log(`✅ Recording complete: ${actualDuration.toFixed(1)}s, URI: ${audioUri}`);
 
-      // Navigate to results screen
       Alert.alert(
         '🎉 Recording Complete!',
         `Duration: ${actualDuration.toFixed(1)}s\nAge: ${age}\nSession: ${sessionId}\nFile: ${audioUri.split('/').pop()}\n\nNext: Results screen will be added!`,
@@ -233,12 +259,14 @@ export default function RecordingScreen() {
           {
             text: 'View Results',
             onPress: () => {
-              // Later this will be:
-              // router.push({
-              //   pathname: '/results',
-              //   params: { age, audioUri, duration: actualDuration.toString(), sessionId }
-              // });
               console.log('Navigate to results...');
+              // Later: navigate to results screen
+            }
+          },
+          {
+            text: 'Record Again',
+            onPress: () => {
+              router.back();
             }
           }
         ]
@@ -247,7 +275,7 @@ export default function RecordingScreen() {
       console.log('❌ Recording failed - no URI returned');
       Alert.alert(
         'Recording Issue',
-        'Recording completed but file may not have been saved properly. This can happen on some devices.',
+        'Recording may not have been saved properly. This can happen on some devices.',
         [
           { text: 'Try Again', onPress: () => router.back() },
           { text: 'Continue Anyway', onPress: () => console.log('Continue with no audio') }
@@ -257,7 +285,7 @@ export default function RecordingScreen() {
   };
 
   const handleTapToStop = () => {
-    if (isRecording && timeRemaining > 0 && !isStoppingRef.current) {
+    if (isRecording && timeRemaining > 0 && !hasStoppedRef.current && !isStoppingRef.current) {
       Alert.alert(
         'Stop Early?',
         `You still have ${timeRemaining} seconds left. Stop now?`,
@@ -270,7 +298,7 @@ export default function RecordingScreen() {
   };
 
   const formatTime = (seconds: number): string => {
-    return seconds.toString().padStart(2, '0');
+    return Math.max(0, seconds).toString().padStart(2, '0');
   };
 
   const getTimerColor = (): string => {
@@ -280,7 +308,7 @@ export default function RecordingScreen() {
   };
 
   const getProgressPercentage = (): number => {
-    return ((60 - timeRemaining) / 60) * 100;
+    return Math.max(0, Math.min(100, ((60 - timeRemaining) / 60) * 100));
   };
 
   return (
@@ -308,14 +336,14 @@ export default function RecordingScreen() {
             </Animated.View>
           </View>
 
-          {/* Main Timer - The Star of TikTok Videos! */}
+          {/* Main Timer */}
           <View style={styles.timerContainer}>
             <Text style={[styles.timerText, { color: getTimerColor() }]}>
               {formatTime(timeRemaining)}
             </Text>
             <Text style={styles.timerLabel}>seconds remaining</Text>
 
-            {/* Age Display for Context */}
+            {/* Age Display */}
             <View style={styles.ageDisplay}>
               <Text style={styles.ageText}>Age: {age}</Text>
             </View>
