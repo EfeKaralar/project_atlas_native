@@ -48,7 +48,7 @@ cd ProjectAtlas
 npm install
 
 # 4. Start the development server
-expo start
+npx expo start
 
 # 5. Scan QR code with Expo Go app or press 'a' for Android emulator
 ```
