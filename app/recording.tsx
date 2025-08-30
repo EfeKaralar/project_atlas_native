@@ -26,15 +26,13 @@ export default function RecordingScreen() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const recordingStartTime = useRef<number>(0);
+  const isStoppingRef = useRef<boolean>(false); // Prevent double-stopping
 
   useEffect(() => {
     startRecording();
 
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      stopRecording();
+      cleanup();
     };
   }, []);
 
@@ -55,12 +53,61 @@ export default function RecordingScreen() {
           }),
         ])
       ).start();
+    } else {
+      // Stop animation when not recording
+      pulseAnimation.stopAnimation();
     }
   }, [isRecording]);
+
+  const cleanup = async () => {
+    console.log('🧹 Cleaning up recording resources...');
+
+    // Stop timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Stop and cleanup recording
+    if (recording && !isStoppingRef.current) {
+      try {
+        const status = await recording.getStatusAsync();
+        if (status.isRecording) {
+          await recording.stopAndUnloadAsync();
+        }
+        setRecording(null);
+      } catch (error) {
+        console.log('Cleanup error:', error);
+      }
+    }
+
+    // Reset audio mode
+    try {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+      });
+    } catch (error) {
+      console.log('Audio mode reset error:', error);
+    }
+
+    setIsRecording(false);
+    isStoppingRef.current = false;
+  };
 
   const startRecording = async () => {
     try {
       console.log('🎙️ Starting recording...');
+
+      // Reset states
+      isStoppingRef.current = false;
+      setTimeRemaining(60);
+
+      // Request permissions first
+      const { status } = await Audio.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Microphone permission is required');
+        return;
+      }
 
       // Configure audio recording
       await Audio.setAudioModeAsync({
@@ -87,6 +134,10 @@ export default function RecordingScreen() {
           linearPCMIsBigEndian: false,
           linearPCMIsFloat: false,
         },
+        web: {
+          mimeType: 'audio/webm',
+          bitsPerSecond: 128000,
+        },
       });
 
       setRecording(newRecording);
@@ -97,39 +148,72 @@ export default function RecordingScreen() {
       timerRef.current = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
-            handleStopRecording();
+            // Use setTimeout to avoid race condition
+            setTimeout(() => handleStopRecording(), 100);
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
 
+      console.log('✅ Recording started successfully');
+
     } catch (error) {
-      console.log('Recording start error:', error);
-      Alert.alert('Error', 'Failed to start recording');
+      console.log('❌ Recording start error:', error);
+      Alert.alert('Error', `Failed to start recording: ${error.message}`);
+      cleanup();
     }
   };
 
-  const stopRecording = async () => {
+  const stopRecording = async (): Promise<string | null> => {
+    // Prevent multiple simultaneous stops
+    if (isStoppingRef.current) {
+      console.log('⚠️ Already stopping recording...');
+      return null;
+    }
+
+    isStoppingRef.current = true;
+
     try {
-      if (!recording) return null;
+      if (!recording) {
+        console.log('⚠️ No recording object to stop');
+        return null;
+      }
 
       console.log('🛑 Stopping recording...');
+
+      // Check if recording is still active
+      const status = await recording.getStatusAsync();
+      if (!status.isRecording) {
+        console.log('⚠️ Recording was already stopped');
+        const uri = recording.getURI();
+        return uri;
+      }
+
+      // Stop the recording
       await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+
+      console.log('✅ Recording stopped successfully, URI:', uri);
+
+      // Reset audio mode
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
       });
 
-      const uri = recording.getURI();
       setIsRecording(false);
 
+      // Clear timer
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
 
       return uri;
+
     } catch (error) {
-      console.log('Recording stop error:', error);
+      console.log('❌ Recording stop error:', error);
+      Alert.alert('Error', `Failed to stop recording: ${error.message}`);
       return null;
     }
   };
@@ -139,13 +223,12 @@ export default function RecordingScreen() {
     const actualDuration = (Date.now() - recordingStartTime.current) / 1000;
 
     if (audioUri) {
-      console.log(`Recording complete: ${actualDuration}s, URI: ${audioUri}`);
+      console.log(`✅ Recording complete: ${actualDuration.toFixed(1)}s, URI: ${audioUri}`);
 
       // Navigate to results screen
-      // For now, just show alert with data
       Alert.alert(
         '🎉 Recording Complete!',
-        `Duration: ${actualDuration.toFixed(1)}s\nAge: ${age}\nSession: ${sessionId}\n\nNext: Results screen will be added!`,
+        `Duration: ${actualDuration.toFixed(1)}s\nAge: ${age}\nSession: ${sessionId}\nFile: ${audioUri.split('/').pop()}\n\nNext: Results screen will be added!`,
         [
           {
             text: 'View Results',
@@ -161,13 +244,20 @@ export default function RecordingScreen() {
         ]
       );
     } else {
-      Alert.alert('Error', 'Recording failed. Please try again.');
-      router.back();
+      console.log('❌ Recording failed - no URI returned');
+      Alert.alert(
+        'Recording Issue',
+        'Recording completed but file may not have been saved properly. This can happen on some devices.',
+        [
+          { text: 'Try Again', onPress: () => router.back() },
+          { text: 'Continue Anyway', onPress: () => console.log('Continue with no audio') }
+        ]
+      );
     }
   };
 
   const handleTapToStop = () => {
-    if (isRecording && timeRemaining > 0) {
+    if (isRecording && timeRemaining > 0 && !isStoppingRef.current) {
       Alert.alert(
         'Stop Early?',
         `You still have ${timeRemaining} seconds left. Stop now?`,
@@ -212,7 +302,9 @@ export default function RecordingScreen() {
               ]}
             >
               <View style={styles.recordingDot} />
-              <Text style={styles.recordingText}>Recording...</Text>
+              <Text style={styles.recordingText}>
+                {isRecording ? 'Recording...' : 'Starting...'}
+              </Text>
             </Animated.View>
           </View>
 
@@ -267,7 +359,7 @@ export default function RecordingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000', // Pure black for TikTok videos
+    backgroundColor: '#000000',
   },
   tapArea: {
     flex: 1,
@@ -310,7 +402,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   timerText: {
-    fontSize: 120, // HUGE for TikTok visibility
+    fontSize: 120,
     fontWeight: 'bold',
     textAlign: 'center',
     fontFamily: 'System',
