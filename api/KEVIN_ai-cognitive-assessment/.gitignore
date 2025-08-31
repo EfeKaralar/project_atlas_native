@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+venvScoring/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+*.wav
+*.mp3
+*.m4a
+audio_files/
+results/
+*.log
+.env
+
+# Sensitive - DO NOT COMMIT
+clinical_algorithm.py
+proprietary/
+normative_data.json
+full_animal_database.json
+scoring_weights.json
+patient_data/
+*.pkl
+*.h5
+models/
+
+# Documentation
+docs/_build/
+site/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Temporary
+tmp/
+temp/
+cache/
