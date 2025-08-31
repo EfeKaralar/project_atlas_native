@@ -39,4 +39,7 @@ yarn-error.*
 # venv
 venvScoring
 
+# misc
+__pycache__/
+
 app-example

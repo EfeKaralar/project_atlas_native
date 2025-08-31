@@ -1,24 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { Audio } from 'expo-av';
+import { router, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
   Alert,
   Animated,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Audio } from 'expo-av';
 
 const { width, height } = Dimensions.get('window');
 
 // 🔧 TESTING CONFIGURATION - Change this ONE line to adjust timer!
 // For development: Set to 10 or 15 for quick testing
 // For production: Set to 60 for full assessment
-const RECORDING_DURATION = 60; // seconds
+const RECORDING_DURATION = 10; // seconds
 
 export default function RecordingScreen() {
   const { age } = useLocalSearchParams<{ age: string }>();
@@ -29,7 +29,7 @@ export default function RecordingScreen() {
 
   // Use refs for values that need to persist across renders
   const recordingRef = useRef<Audio.Recording | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<number | null>(null);
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const recordingStartTime = useRef<number>(0);
   const isStoppingRef = useRef<boolean>(false);
@@ -129,21 +129,25 @@ export default function RecordingScreen() {
       const { recording: newRecording } = await Audio.Recording.createAsync({
         android: {
           extension: '.wav',
-          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_DEFAULT,
-          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_DEFAULT,
+          outputFormat: 2, // MPEG_4
+          audioEncoder: 3, // AAC
           sampleRate: 44100,
           numberOfChannels: 1,
           bitRate: 128000,
         },
         ios: {
           extension: '.wav',
-          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+          audioQuality: 2, // HIGH
           sampleRate: 44100,
           numberOfChannels: 1,
           bitRate: 128000,
           linearPCMBitDepth: 16,
           linearPCMIsBigEndian: false,
           linearPCMIsFloat: false,
+        },
+        web: {
+          mimeType: 'audio/wav',
+          bitsPerSecond: 128000,
         },
       });
 
@@ -181,7 +185,7 @@ export default function RecordingScreen() {
 
     } catch (error) {
       console.log('❌ Recording start error:', error);
-      Alert.alert('Error', `Failed to start recording: ${error.message}`);
+      Alert.alert('Error', `Failed to start recording: ${(error as Error).message}`);
       cleanup();
     }
   };
@@ -257,25 +261,15 @@ export default function RecordingScreen() {
     if (audioUri) {
       console.log(`✅ Recording complete: ${actualDuration.toFixed(1)}s, URI: ${audioUri}`);
 
-      Alert.alert(
-        '🎉 Recording Complete!',
-        `Duration: ${actualDuration.toFixed(1)}s\nAge: ${age}\nSession: ${sessionId}\nFile: ${audioUri.split('/').pop()}\n\nNext: Results screen will be added!`,
-        [
-          {
-            text: 'View Results',
-            onPress: () => {
-              console.log('Navigate to results...');
-              // Later: navigate to results screen
-            }
-          },
-          {
-            text: 'Record Again',
-            onPress: () => {
-              router.back();
-            }
-          }
-        ]
-      );
+      // Navigate to results screen with audio data
+      router.push({
+        pathname: '/results' as any,
+        params: {
+          age: age,
+          sessionId: sessionId,
+          audioUri: audioUri,
+        },
+      });
     } else {
       console.log('❌ Recording failed - no URI returned');
       Alert.alert(

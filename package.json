@@ -8,7 +8,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "api": "cd api/KEVIN_ai-cognitive-assessment && python start_server.py",
+    "api:win": "cd api/KEVIN_ai-cognitive-assessment && start_server.bat",
+    "api:ps": "cd api/KEVIN_ai-cognitive-assessment && powershell -ExecutionPolicy Bypass -File start_server.ps1"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
