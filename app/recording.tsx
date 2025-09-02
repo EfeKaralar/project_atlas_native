@@ -18,7 +18,7 @@ const { width, height } = Dimensions.get('window');
 // 🔧 TESTING CONFIGURATION - Change this ONE line to adjust timer!
 // For development: Set to 10 or 15 for quick testing
 // For production: Set to 60 for full assessment
-const RECORDING_DURATION = 10; // seconds
+const RECORDING_DURATION = 60; // seconds
 
 export default function RecordingScreen() {
   const { age } = useLocalSearchParams<{ age: string }>();
