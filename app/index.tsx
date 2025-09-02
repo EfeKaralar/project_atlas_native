@@ -72,7 +72,8 @@ export default function WelcomeScreen() {
 
           {/* Version Info */}
           <View style={styles.bottomInfo}>
-            <Text style={styles.versionText}>Powered by Penn State Research</Text>
+            <Text style={styles.versionText}>Powered by Kevin Mekulu's Research</Text>
+            <Text style={styles.versionText}>version 0.1.0</Text>
           </View>
         </View>
       </LinearGradient>

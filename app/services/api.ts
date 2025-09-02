@@ -1,11 +1,33 @@
-// API Service for Cognitive Assessment
-// Handles transcription and analysis integration
+// TODO: Add metric tracking
 
-const API_BASE_URL = 'http://localhost:8000'; // FastAPI server URL
+
+// TODO: Implement network detection for development and production
+// import * as Network from 'expo-network';
+
+// const getApiBaseUrl = async () => {
+//   if (__DEV__) {
+//     try {
+//       const ipAddress = await Network.getIpAddressAsync();
+//       return `http://${ipAddress}:8000`;
+//     } catch (error) {
+//       // Fallback to hardcoded IP if network detection fails
+//       console.log('Network detection failed, using fallback IP');
+//       return 'http://192.168.106.98:8000';
+//     }
+//   } else {
+//     return "production_url";
+//   }
+// };
+let API_BASE_URL = "http://192.168.106.98:8000";
+// getApiBaseUrl().then(url => {
+//   API_BASE_URL = url;
+//   console.log('API URL set to:', url);
+// });
 
 export interface AnalyzeRequest {
   text: string;
 }
+
 
 export interface AnalyzeResponse {
   animal_count: number;
@@ -19,6 +41,7 @@ export interface TranscriptionResponse {
   text: string;
   confidence: number;
 }
+
 
 class ApiService {
   private baseUrl: string;

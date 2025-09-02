@@ -1,5 +1,6 @@
 # app.py
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pydantic_core.core_schema import none_schema
 from brain_health import SimpleBrainHealth
@@ -7,17 +8,34 @@ import whisper
 import tempfile
 import os
 import torch
+import logging
 
 app = FastAPI(title="Brain Health Demo API", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 _analyzer = SimpleBrainHealth()
 
-# Initializing Whisper model at startup
-print("=================LOADING WHISPER MODEL=================")
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"[DEBUG] Using device: {device}")
+# Logging setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-_model = whisper.load_model("base").to(device)
-print("[DEBUG] Whisper model loaded successfully!")
+# Initializing Whisper model at startup
+logger.info("=================LOADING WHISPER MODEL=================")
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+print("\n")
+logger.info(f"[DEBUG] Using device for transcription: {device}\n")
+
+whisper_model_name = "base"
+_model = whisper.load_model(whisper_model_name).to(device)
+print("\n")
+logger.info(f"[DEBUG] Whisper {whisper_model_name} model loaded successfully!\n")
 
 class AnalyzeIn(BaseModel):
     text: str
@@ -45,24 +63,24 @@ async def trascribe_audio(file: UploadFile = File(...)):
         temp_file.write(content)
         temp_file.close()
         
-        print(f"[DEBUG] Temporary file saved: {temp_file_path}")
+        logging.info(f"[DEBUG] Temporary file saved: {temp_file_path}")
         
-        print("[DEBUG] Running Whisper transcription")
+        logging.info("[DEBUG] Running Whisper transcription")
         result = _model.transcribe(temp_file_path, fp16=(device == "cuda"))
         
         transcribed_text = result["text"].strip()
         
-        print(f"[DEBUG] Transcription completed: '{transcribed_text[:50]}...'")
+        logging.info(f"[DEBUG] Transcription completed: '{transcribed_text[:50]}...'")
         
         return TranscriptionOut(
             text=transcribed_text
         )
         
     except Exception as e:
-        print(f"[ERROR] Transcription error: {str(e)}")
+        logging.error(f"[ERROR] Transcription error: {str(e)}")
         
         # TODO: Change to an actual fallback procedure
-        print("[ERROR] Using fallback transcription...")
+        logging.error("[ERROR] Using fallback transcription...")
         return TranscriptionOut(
             text="cat dog bird fish elephant lion tiger bear wolf deer rabbit squirrel mouse rat hamster guinea pig",
             confidence=0.85
@@ -72,10 +90,11 @@ async def trascribe_audio(file: UploadFile = File(...)):
         if temp_file_path and os.path.exists(temp_file_path):
             try:
                 os.unlink(temp_file_path)
-                print(f"[DEBUG] Cleaned up temporary file: {temp_file_path}")
+                logging.info(f"[DEBUG] Cleaned up temporary file: {temp_file_path}")
             except Exception as e:
-                print(f"[ERROR] Failed to clean up temp file: {e}")
-
+                logging.error(f"[ERROR] Failed to clean up temp file: {e}")
+# TODO: Handle empty input
+# TODO: Fix scoring
 @app.post("/analyze", response_model=AnalyzeOut)
 def analyze(inp: AnalyzeIn):
     res = _analyzer.analyze_speech(inp.text)
