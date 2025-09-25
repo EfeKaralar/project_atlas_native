@@ -1,6 +1,5 @@
 // TODO: Add metric tracking
 
-
 // TODO: Implement network detection for development and production
 // import * as Network from 'expo-network';
 
@@ -18,11 +17,12 @@
 //     return "production_url";
 //   }
 // };
-let API_BASE_URL = "http://192.168.106.98:8000";
-// getApiBaseUrl().then(url => {
-//   API_BASE_URL = url;
-//   console.log('API URL set to:', url);
-// });
+
+import { API_CONFIG } from "../config/api";
+
+const API_BASE_URL = API_CONFIG.baseUrl;
+
+console.log(`BACKEND FROM: ${API_BASE_URL}`);
 
 export interface AnalyzeRequest {
   text: string;
@@ -65,19 +65,18 @@ class ApiService {
       const response = await fetch(`${this.baseUrl}/transcribe`, {
         method: 'POST',
         body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[ERROR] Response not OK:', response.status, errorText)
         throw new Error(`Transcription failed: ${response.statusText}`);
       }
 
       const result = await response.json();
       console.log('[DEBUG] Transcription completed:', result);
       
-      return result;
+      return {text: result.transcription, confidence: 1.0};
     } catch (error) {
       console.error('[ERROR] Transcription error:', error);
       
